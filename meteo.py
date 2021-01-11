@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
-# Standard libraries
 import sys
 import argparse
 from datetime import datetime
 import functools
-# External libraries
+import configparser
+
 import requests
 
 # We define the internal data exchange type MintData.
@@ -71,13 +71,28 @@ def print_sirane_meteo_input (data, file = sys.stdout):
 
         p(date, *d[1:])
 
-NANTES_COORD = [47.2172500, -1.5533600]
+def main(configfile = 'config.ini'):
+    config = configparser.ConfigParser()
+    config.read(configfile)
+    api_key = config['meteo']['api_key']
+    NANTES_LAT, NANTES_LON = config['GENERAL']['latitude'], config['GENERAL']['longitude']
 
-parser = argparse.ArgumentParser()
-parser.add_argument("api_key")
-args = parser.parse_args();
+    if not (api_key and NANTES_LAT, NANTES_LON):
+        raise Exception()
 
-# Prints OWM 2 day hourly forecast in sirane format
-data = request_owp_data (NANTES_COORD[0], NANTES_COORD[1], args.api_key)
-data = extract_owp_data(data)
-print_sirane_meteo_input(data)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--file")
+    args = parser.parse_args()
+
+    # Prints OWM 48-hours hourly forecast in sirane format
+    data = request_owp_data (NANTES_LAT, NANTES_LON, api_key)
+    data = extract_owp_data(data)
+    if args.file:
+        with open(args.file, 'w') as f:
+            print_sirane_meteo_input(data, file = f)
+    else:
+        print_sirane_meteo_input(data)
+
+
+if __name__ == '__main__':
+    main()
