@@ -1,1 +1,13 @@
+# Python
+/venv/
+
+# Local configuration
 /config.ini
+*.cdsapirc
+
+# Copernicus default download filename
+download.grib
+download.nc
+
+# Others
+/tmp/

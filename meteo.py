@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
-import sys
 import argparse
-from datetime import datetime
-import functools
 import configparser
+import functools
+import re
+import sys
+from datetime import datetime
 
 import requests
 
@@ -22,14 +23,16 @@ import requests
 # - precip is the precipitation rate in mm/h
 # Not mentionned here are the upper and lower bounds used by sirane for certain parameters, refer to their documentation for more details
 
-# Get weather data from OpenWeatherMap as JSON dictionary
+
+# Get weather data from OpenWeatherMap JSON API as a dictionary
 def request_owp_data (lat, lon, api_key):
     part = "current,minutely,daily,alerts"
-    url = f"https://api.openweathermap.org/data/2.5/onecall?lat={lat}&lon={lon}&exclude={part}&appid={api_key}"
+    url = "https://api.openweathermap.org/data/2.5/onecall?lat=%s&lon=%s&exclude=%s&appid=%s" % (lat, lon, part, api_key)
     r = requests.get(url)
     r.raise_for_status()
     data = r.json()
     return data
+
 
 # Take the JSON from OpenWeatherMap and turn it into an object of type MintData
 def extract_owp_data (data):
@@ -57,6 +60,7 @@ def extract_owp_data (data):
         r.append(item)
     return r
 
+
 # Take the object of type MintData and print it formatted for sirane to the file (by default, stdout)
 def print_sirane_meteo_input (data, file = sys.stdout):
     # Define a print function to use our defaults
@@ -71,28 +75,38 @@ def print_sirane_meteo_input (data, file = sys.stdout):
 
         p(date, *d[1:])
 
-def main(configfile = 'config.ini'):
+
+def main(outputfile = None, configfile = None):
+
+    # === Read configuration file ===
+
+    if configfile is None:
+        configfile = 'config.ini'
+
     config = configparser.ConfigParser()
     config.read(configfile)
     api_key = config['meteo']['api_key']
-    NANTES_LAT, NANTES_LON = config['GENERAL']['latitude'], config['GENERAL']['longitude']
+    lat, lon = config['GENERAL']['latitude'], config['GENERAL']['longitude']
 
-    if not (api_key and NANTES_LAT, NANTES_LON):
-        raise Exception()
+    if re.fullmatch('[A-Z_]+', api_key): # eg. 'YOUR_API_KEY_HERE'
+        raise ValueError("Missing OpenWeatherMap API key")
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--file")
-    args = parser.parse_args()
+    # === Download data and print it ===
 
     # Prints OWM 48-hours hourly forecast in sirane format
-    data = request_owp_data (NANTES_LAT, NANTES_LON, api_key)
+    data = request_owp_data(lat, lon, api_key)
     data = extract_owp_data(data)
-    if args.file:
-        with open(args.file, 'w') as f:
+    if outputfile is not None:
+        with open(outputfile, 'w') as f:
             print_sirane_meteo_input(data, file = f)
     else:
         print_sirane_meteo_input(data)
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--file")
+    parser.add_argument("--config")
+    args = parser.parse_args()
+
+    main(outputfile = args.file, configfile = args.config)
