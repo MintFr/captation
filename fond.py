@@ -27,7 +27,7 @@ import pygrib
 # Download forecast data from midnight until $upto hours for [NO2, O3, PM10, PM2.5]
 # Returns the filename of the downloaded file.
 def download_grib_from_cams (date, area, upto = None, filename = None):
-    if upto is None: upto = 6
+    if upto is None: upto = 24
 
     date_s = date.strftime('%Y-%m-%d')
     if filename is None:
@@ -151,7 +151,12 @@ def main(outputfile = None, configfile = None, tohour = None):
             print_sirane_fond_input(data, file = f)
     else:
         print_sirane_fond_input(data)
+    start_time = data[0][0] # First start hour
+
+    # cleanup
     os.unlink(grib_filename)
+
+    return start_time
 
 
 if __name__ == "__main__":

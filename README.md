@@ -29,7 +29,9 @@ Generates a SIRANE weather input file from OpenWeatherMap data.
 
 ### fond.py
 
-Generates a (6-hour long) SIRANE background concentration file from Copernicus data.
+**WARN:** Times are in UTC and not GMT+1
+
+Generates a (24-hour long) SIRANE background concentration file from Copernicus data.
 
 **Requirements:** cdsapi, pygrib, and a valid `atmosphere.cdsapi` from [Copernicus ADS](https://ads.atmosphere.copernicus.eu/)
 
@@ -52,6 +54,25 @@ CDSAPI_RC=.cdsapirc.climate ./meteo_archive.py
 
 WIP it only downloads data to `download.grib` for now.
 
+### cut_data.py
+
+Cuts a Flow measurements CSV file into smaller files based on a timing CSV file.
+
+```sh
+# Creates a bunch of files in split_data/
+./cut_data.py --csv data/Flow3_user_measures_20210118_20210201.csv --times data/Horaires_Flow3.csv --capteur Flow3
+```
+
+The timings file looks like the following. Times are in GMT+1 and dates in DD/MM/YY format.
+
+```csv
+Date,Créneau,Itinéraire,Début,Fin
+18/01/21,M1,ECN,08:24:00,10:15:00
+18/01/21,M2,LAENNEC,10:28:30,11:56:10
+19/01/21,M1,ECN,08:04:10,09:24:58
+19/01/21,M2,LAENNEC,10:18:00,12:04:00
+```
+
 ### fond_stub.py
 
 Generates a stub SIRANE background concentration file with all concentrations set to 1. (may not work)
@@ -61,3 +82,5 @@ Generates a stub SIRANE background concentration file with all concentrations se
 ### TODO
 
 Use java's geotools instead of pygrib
+
+Handle timezones correctly: meteo.py and fond.py are in UTC, SIRANE expects GMT+1 (probably)

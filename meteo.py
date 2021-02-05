@@ -101,6 +101,8 @@ def main(outputfile = None, configfile = None):
             print_sirane_meteo_input(data, file = f)
     else:
         print_sirane_meteo_input(data)
+    
+    return data[0][0] # Return starting hour
 
 
 if __name__ == '__main__':
