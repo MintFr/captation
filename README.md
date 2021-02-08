@@ -73,6 +73,14 @@ Date,Créneau,Itinéraire,Début,Fin
 19/01/21,M2,LAENNEC,10:18:00,12:04:00
 ```
 
+The Atmotrack files have a 2 line header: the the Excel metadata line `sep=,` and the actual CSV header.
+We combined all the files together using this command:
+```sh
+perl -nle 'if ($. == 2) { print && exit }' 210120_atmotrack_data.csv > Atmo3_atmotrack_data.csv
+tail -qn +3 2101*.csv >> Atmo3_atmotrack_data.csv # Beware of infinite loops
+```
+
+
 ### fond_stub.py
 
 Generates a stub SIRANE background concentration file with all concentrations set to 1. (may not work)

@@ -11,7 +11,8 @@ download.grib
 download.nc
 
 # Workdir
-
+/data/
+/split_data/
 sirane/sirane*
 
 # Others
