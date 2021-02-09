@@ -46,6 +46,8 @@ Generates a (24-hour long) SIRANE background concentration file from Copernicus 
 
 ### meteo_archive.py
 
+**WIP:** Only cdsapi download
+
 **Requirements:** cdsapi, TODO, and a valid `.cdsapirc.climate` from [Copernicus CDS](https://cds.climate.copernicus.eu/)
 
 ```sh
@@ -85,6 +87,16 @@ tail -qn +3 2101*.csv >> Atmo3_atmotrack_data.csv # Beware of infinite loops
 Download a trafic data file from [Opendata Nantes Metropole](https://data.nantesmetropole.fr/explore/dataset/244400404_fluidite-axes-routiers-nantes-metropole/export/)
 ```sh
 ./trafic_nm.py --file trafic_file_.csv
+```
+
+### datex2.py
+
+**WIP:** conversion is working, missing download
+
+Get data from [Info-Routière](http://diffusion-numerique.info-routiere.gouv.fr/toutes-les-dir-a10.html) and convert it to a CSV file.
+
+```sh
+./datex2.py
 ```
 
 
