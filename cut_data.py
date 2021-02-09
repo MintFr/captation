@@ -20,7 +20,14 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--csv", required = True, help = "The CSV data file")
 parser.add_argument("--times", required = True, help = "The CSV timings file")
 parser.add_argument("--capteur", required = True, help = "The sensor's name which will be appended to the filename")
+parser.add_argument("--minutes-margin", help = "How many minutes to add at the beginning and the end of the timimings")
 args = parser.parse_args()
+
+# Handle arguments
+try:
+    args.minutes_margin = int(args.minutes_margin)
+except:
+    args.minutes_margin = 0
 
 # Slurp CSV data
 with open(args.csv) as f:
@@ -71,8 +78,11 @@ os.chdir("split_data")
 
 # Use timings to select the subset of data within that time interval (and write it a file)
 for timing in timings:
-    print(timing[0].isoformat(), *timing[1:3], timing[3].isoformat(),timing[4].isoformat())
-    subset = list(filter(lambda x: timing[3] <= x[0] <= timing[4], data))
+    start = timing[3] - timedelta(minutes = args.minutes_margin)
+    end = timing[4] + timedelta(minutes = args.minutes_margin)
+
+    print(*timing[1:3], start.isoformat(), end.isoformat())
+    subset = list(filter(lambda x: start <= x[0] <= end, data))
 
     # [0]: first line, [0][0]: timestamp of the first line
     try:

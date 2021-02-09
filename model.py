@@ -60,11 +60,13 @@ def main(configfile = None, skip_download = None):
         # Create meteo file
         meteo_output = "sirane/meteo_%s.dat" % timestamp
         print("Creating meteo file at %s" % meteo_output)
+        sys.stdout.flush()
         meteo_start = meteo_main(outputfile = meteo_output, configfile = configfile)
 
         # Create fond file
         fond_output = "sirane/fond_%s.dat" % timestamp
         print("Creating fond file at %s" % fond_output)
+        sys.stdout.flush()
         fond_start = fond_main(outputfile = fond_output, configfile = configfile)
     else:
         print("Skipped fetching data from network sources")

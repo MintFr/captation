@@ -80,6 +80,13 @@ perl -nle 'if ($. == 2) { print && exit }' 210120_atmotrack_data.csv > Atmo3_atm
 tail -qn +3 2101*.csv >> Atmo3_atmotrack_data.csv # Beware of infinite loops
 ```
 
+### trafic_nm.py
+
+Download a trafic data file from [Opendata Nantes Metropole](https://data.nantesmetropole.fr/explore/dataset/244400404_fluidite-axes-routiers-nantes-metropole/export/)
+```sh
+./trafic_nm.py --file trafic_file_.csv
+```
+
 
 ### fond_stub.py
 
