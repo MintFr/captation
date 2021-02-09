@@ -14,6 +14,8 @@ download.nc
 /data/
 /split_data/
 sirane/sirane*
+sirane/*
+!sirane/.keep
 
 # Others
 /tmp/
