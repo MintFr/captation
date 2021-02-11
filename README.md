@@ -84,6 +84,8 @@ tail -qn +3 2101*.csv >> Atmo3_atmotrack_data.csv # Beware of infinite loops
 
 ### trafic_nm.py
 
+Depends on requests.
+
 Download a trafic data file from [Opendata Nantes Metropole](https://data.nantesmetropole.fr/explore/dataset/244400404_fluidite-axes-routiers-nantes-metropole/export/)
 ```sh
 ./trafic_nm.py --file trafic_file_.csv
@@ -91,12 +93,15 @@ Download a trafic data file from [Opendata Nantes Metropole](https://data.nantes
 
 ### datex2.py
 
-**WIP:** conversion is working, missing download
+Depends on requests.
 
 Get data from [Info-Routière](http://diffusion-numerique.info-routiere.gouv.fr/toutes-les-dir-a10.html) and convert it to a CSV file.
+It specifically fetches the latest traffic data for Nantes.
 
 ```sh
 ./datex2.py
+# Write to output.csv with a custom config
+./datex2.py --file output.csv --config local/config.ini
 ```
 
 
