@@ -19,11 +19,14 @@ def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
 
-def download_latest_data(auth):
+def download_latest_data(auth, file_regex = None):
     """
     Find the latest Datex2 xml file by navigating the index.
     Returns the filename
     """
+    if file_regex is None:
+        file_regex = "TraficBreizhNantes_1_DataTR_\d{8}_\d{6}.xml"
+
     nantes_url = "http://diffusion-numerique.info-routiere.gouv.fr/tipitrafic/TraficBreizhNantes/"
 
     # Fetch index page and find the latest folder
@@ -36,7 +39,7 @@ def download_latest_data(auth):
     hour_folder_url = nantes_url + last_folder
     r = requests.get(hour_folder_url, auth = auth)
     r.raise_for_status()
-    last_file = re.findall("TraficBreizhNantes_1_DataTR_\d{8}_\d{6}.xml", r.text)[-1]
+    last_file = re.findall(file_regex, r.text)[-1]
     # last_file will also be the filename
 
     # Download file
@@ -48,6 +51,7 @@ def download_latest_data(auth):
         f.write(r.content)
     
     return last_file
+
 
 def parse_xml_file(filename):
     """
@@ -96,7 +100,38 @@ def parse_xml_file(filename):
     return data
 
 
-def main(configfile = None, outputfile = None):
+# Copy pasted from parse_xml_file
+def parse_trt_xml(filename):
+    # XML namespaces because ElementTree parses child elements of d2LogicalModel namespaced
+    ns = {
+        'd2': "http://datex2.eu/schema/2/2_0",
+        'xsi': "http://www.w3.org/2001/XMLSchema-instance"
+    }
+    tree = ET.parse(filename)
+    root = tree.getroot()
+
+    data = []
+    for m in root.findall('d2:payloadPublication/d2:siteMeasurements', ns):
+        siteId = m.find('d2:measurementSiteReference', ns).get('id')
+        time = m.find('d2:measurementTimeDefault', ns).text
+
+        basicData = m.find('d2:measuredValue/d2:measuredValue/d2:basicData', ns)
+        # Get the data's label (unneeded)
+        datatype = basicData.get('{%s}type' % ns['xsi'])
+        value = basicData[0][0].text
+        nbInputValues = basicData[0].get("numberOfInputValuesUsed")
+
+        row = [siteId, time, value, nbInputValues]
+
+        data.append(row)
+
+    header = ["measurementSiteReference", "measurementTimeDefault", "TrafficStatus", "numberOfInputValuesUsed"]
+    data.insert(0, header)
+
+    return data
+
+
+def main(configfile = None, outputfile = None, alsoTRT = True):
     # Argument defaults
     if configfile is None:
         configfile = "config.ini"
@@ -129,6 +164,14 @@ def main(configfile = None, outputfile = None):
     else:
         writer = csv.writer(sys.stdout)
         writer.writerows(data)
+    
+    if alsoTRT:
+        # Do the same with the DataTRT file
+        filename = download_latest_data(auth, "TraficBreizhNantes_1_DataTRT_\d{8}_\d{6}.xml")
+        data = parse_trt_xml(filename)
+        writer = csv.writer(sys.stdout)
+        writer.writerows(data)
+        os.unlink(filename)
 
     # Return data time
     timestamp = data[1][1]
@@ -143,6 +186,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--file", help = "Output file")
     parser.add_argument("--config")
+    parser.add_argument("--trt", action = 'store_true')
     args = parser.parse_args()
 
-    main(configfile = args.config, outputfile = args.file)
+
+
+    main(configfile = args.config, outputfile = args.file, alsoTRT = args.trt)

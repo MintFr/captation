@@ -96,12 +96,14 @@ Download a trafic data file from [Opendata Nantes Metropole](https://data.nantes
 Depends on requests.
 
 Get data from [Info-Routière](http://diffusion-numerique.info-routiere.gouv.fr/toutes-les-dir-a10.html) and convert it to a CSV file.
-It specifically fetches the latest traffic data for Nantes.
+It specifically fetches the latest traffic data (DataTR) for Nantes.
 
 ```sh
 ./datex2.py
 # Write to output.csv with a custom config
 ./datex2.py --file output.csv --config local/config.ini
+# *also* print DataTRT in csv format to output
+./datex2.py --trt
 ```
 
 
