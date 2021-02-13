@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from subprocess import run
+import sys
 
 cdsapi_chain = [
     ["six", "appdirs", "packaging", "wheel"],
@@ -8,11 +9,15 @@ cdsapi_chain = [
     ["cdsapi"],
 ]
 
-normal_deps = ["requests", "pygrib"]
+normal_deps = [
+        "requests",
+        # "pygrib"
+]
 
 def pip_install(pkgs):
-    cmd = ["pip", "install", *pkgs]
+    cmd = ["pip", "install", "--disable-pip-version-check", *pkgs]
     print("$ " + " ".join(cmd))
+    sys.stdout.flush()
     run(cmd)
 
 pip_install(normal_deps)

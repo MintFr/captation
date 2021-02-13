@@ -26,17 +26,17 @@ import pygrib
 
 # Download forecast data from midnight until $upto hours for [NO2, O3, PM10, PM2.5]
 # Returns the filename of the downloaded file.
-def download_grib_from_cams (date, area, upto = None, filename = None):
+def download_netcdf_from_cams (date, area, upto = None, filename = None):
     if upto is None: upto = 24
 
     date_s = date.strftime('%Y-%m-%d')
     if filename is None:
-        filename = "fond_%s.grib" % date_s
+        filename = "fond_%s.nc" % date_s
 
     request = {
         'model': 'chimere',
         'date': "%s/%s" % (date_s, date_s),
-        'format': 'grib',
+        'format': 'netcdf',
         'type': 'forecast',
         'time': '00:00',
         'variable': [
@@ -107,7 +107,7 @@ def print_sirane_fond_input (data, file = sys.stdout):
         p(date, *d[1:])
 
 
-def main(outputfile = None, configfile = None, tohour = None):
+def main(outputfile = None, configfile = None, tohour = None, keepgrib = False):
     # === Read configuration file ===
 
     if configfile is None:
@@ -142,7 +142,7 @@ def main(outputfile = None, configfile = None, tohour = None):
 
     os.environ['CDSAPI_RC'] = cdsapircfile
 
-    grib_filename = download_grib_from_cams(datetime.utcnow(), area, upto = tohour)
+    grib_filename = download_netcdf_from_cams(datetime.utcnow(), area, upto = tohour)
     data = pygrib.open(grib_filename)
     data = extract_cams_data(data, lat1, lat2, lon1, lon2)
     sort_data(data)
@@ -154,7 +154,8 @@ def main(outputfile = None, configfile = None, tohour = None):
     start_time = data[0][0] # First start hour
 
     # cleanup
-    os.unlink(grib_filename)
+    if not keepgrib:
+        os.unlink(grib_filename)
 
     return start_time
 
@@ -164,8 +165,9 @@ if __name__ == "__main__":
     parser.add_argument("--file")
     parser.add_argument("--config")
     parser.add_argument("--tohour")
+    parser.add_argument("--keep-grib", action = 'store_true')
     args = parser.parse_args()
 
     if args.tohour is not None: args.tohour = int(args.tohour)
 
-    main(outputfile = args.file, configfile = args.config, tohour = args.tohour)
+    main(outputfile = args.file, configfile = args.config, tohour = args.tohour, keepgrib = args.keep_grib)

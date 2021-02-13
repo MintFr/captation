@@ -44,6 +44,29 @@ Generates a (24-hour long) SIRANE background concentration file from Copernicus 
 ./fond.py --tohour 24
 ```
 
+#### fond_extract_grib
+
+A java app that extracts the data wanted by fond.py, from a netcdf file (and not a grib file).
+
+We don't handle GRIB files, because ucar's grib library, and by extension, geotool's don't handle the specific template 40 used in GRIB
+files downloaded from COPERNICUS. The eccodes library works, but you'd need to install it. So instead, we decided to use the netcdf format.
+
+```sh
+./gradlew run --args="-netcdf fond_2021-02-12.nc -lat 47.2172500 -lon -1.5533600"
+# or, using the shadowJar (after running `./gradlew shadowJar`)
+java -jar build/fond_extract_grib-all.jar -netcdf fond_2021-02-12.nc -lat 47.2172500 -lon -1.5533600
+```
+
+Sample output:
+```text
+FORECAST time from 20210212
+time: 0.0 1.0 2.0 3.0 4.0 5.0
+no2_conc: 5.5599656 4.723219 4.1629553 4.053813 4.524928 6.371196
+o3_conc: 69.35357 70.81811 71.61889 71.439384 70.99925 70.05165
+pm10_conc: 11.600811 11.010193 10.444889 10.026692 9.667715 9.815989
+pm2p5_conc: 11.315586 10.734458 10.171167 9.751464 9.406523 9.551438
+```
+
 ### meteo_archive.py
 
 **WIP:** Only cdsapi download
