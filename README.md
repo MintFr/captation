@@ -33,15 +33,19 @@ Generates a SIRANE weather input file from OpenWeatherMap data.
 
 Generates a (24-hour long) SIRANE background concentration file from Copernicus data.
 
-**Requirements:** cdsapi, pygrib, and a valid `atmosphere.cdsapi` from [Copernicus ADS](https://ads.atmosphere.copernicus.eu/)
+**Requirements:** cdsapi, Java 11,  and a valid `atmosphere.cdsapi` from [Copernicus ADS](https://ads.atmosphere.copernicus.eu/)
+
+The `--java` and `--jar` arguments can be set in the `config.ini` file with keys `java11` and `fond_jar` under the `[fond]` section
 
 ```sh
 # Download and print background pollution
 ./fond.py
+# Custom java and jar paths if not specified in config.ini
+./fond.py --java /path/to/java11 --jar fond_extract_data/build/libs/fond_extract_data-all.jar
 # Download to fond.dat based on custom config file
-./fond.py --file fond.dat --config local/config.ini
+./fond.py […] --file fond.dat --config local/config.ini
 # Download forecasts up to 24:00 (instead of 06:00)
-./fond.py --tohour 24
+./fond.py […] --tohour 24
 ```
 
 #### fond_extract_grib

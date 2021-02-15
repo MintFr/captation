@@ -5,6 +5,11 @@ longitude = -1.5533600
 [meteo]
 api_key = YOUR_API_KEY_HERE
 
+[fond]
+java11 = /path/to/java11
+fond_jar = ./path/to/fond_extract_data-all.jar
+; cdsapircfile = atmosphere.cdsapirc
+
 [tipitrafic]
 username = TIPI_USERNAME
 password = TIPI_PASSWORD
