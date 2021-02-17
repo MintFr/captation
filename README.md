@@ -133,6 +133,12 @@ It specifically fetches the latest traffic data (DataTR) for Nantes.
 ./datex2.py --trt
 ```
 
+### emission.py
+
+**WIP**
+
+Given the trafic data from `trafic_nm.py` and `datex2.py`, compute the vehicule emissions which will be used in SIRANE.
+
 
 ### fond_stub.py
 
