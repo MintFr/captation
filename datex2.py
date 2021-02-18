@@ -131,7 +131,7 @@ def parse_trt_xml(filename):
     return data
 
 
-def main(configfile = None, outputfile = None, alsoTRT = True):
+def main(configfile = None, outputfile = None, alsoTRT = False):
     # Argument defaults
     if configfile is None:
         configfile = "config.ini"

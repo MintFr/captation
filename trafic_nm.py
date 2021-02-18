@@ -41,8 +41,8 @@ def main(outputfile = None):
     delta = timedelta(hours = tz_val.hour, minutes = tz_val.minute)
     tz = timezone(delta)
 
-    dt = datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S").replace(tzinfo = tz)
-    return dt
+    timestamp = datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S").replace(tzinfo = tz)
+    return timestamp
 
 
 if __name__ == "__main__":

@@ -8,6 +8,29 @@ Scripts for the measurement team.
 * Install the dependencies as listed below
 * Run the script
 
+Call diagram:
+
+```dot
+digraph G {
+    model_sh [label = "model.sh"]
+    model [ label = "model.py"]
+    fond [label = "fond.py"]
+    meteo [label = "meteo.py"]
+    emission [label = "emission.py"]
+    trafic_nm [label = "trafic_nm.py"]
+    datex2 [label = "datex2.py"]
+    
+    model_sh -> model
+
+    model -> fond
+    model -> meteo
+    model -> emission
+
+    emission -> trafic_nm
+    emission -> datex2
+}
+```
+
 ## Scripts
 
 ### meteo.py
