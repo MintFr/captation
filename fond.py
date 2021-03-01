@@ -62,6 +62,7 @@ def extract_cams_data_java (java, jarname, netcdf_filename, lat, lon):
     # Call java program
     cmd = "%s -jar %s -netcdf %s -lat %s -lon %s" % (java, jarname, netcdf_filename, lat, lon)
     print("$ " + cmd, file = sys.stderr)
+    sys.stdout.flush(); sys.stderr.flush() # Flush stdout and stderr before running another process
     p = subprocess.run(cmd, shell = True, stdout = subprocess.PIPE, universal_newlines = True)
     lines = p.stdout.split("\n")
 

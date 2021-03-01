@@ -8,6 +8,7 @@ from datetime import datetime, timezone, timedelta
 
 from meteo import main as meteo_main
 from fond import main as fond_main
+from emission import main as emission_main, write_evolemislin
 
 # WARN SIRANE's directory is hardcoded as being "sirane"
 
@@ -60,20 +61,25 @@ def main(configfile = None, skip_download = None):
         # Create meteo file
         meteo_output = "sirane/meteo_%s.dat" % timestamp
         print("Creating meteo file at %s" % meteo_output)
-        sys.stdout.flush()
         meteo_start = meteo_main(outputfile = meteo_output, configfile = configfile)
 
         # Create fond file
         fond_output = "sirane/fond_%s.dat" % timestamp
         print("Creating fond file at %s" % fond_output)
-        sys.stdout.flush()
         fond_start = fond_main(outputfile = fond_output, configfile = configfile)
+
+        # Create EmisLin file
+        emis_output = "sirane/emis_lin_%s.dat" % timestamp
+        print("Creating emission file at %s" % emis_output)
+        traffic_time, datex_time = emission_main(outputfile = emis_output, configfile = configfile)
+
     else:
         print("Skipped fetching data from network sources")
 
-    # Compute simulation start and end times
+    # Compute simulation start time
+    # NB 0 hour simulation because we don't have a traffic/emission prediction model
     start_time = max(meteo_start, fond_start)
-    end_time = start_time + timedelta(hours = 3) # FIXME hardcoded 3 hour simulation
+    end_time = start_time + timedelta(hours = 0)
     start_time_s = start_time.strftime("%d/%m/%Y %H:%M:%S")
     end_time_s = end_time.strftime("%d/%m/%Y %H:%M:%S")
 
@@ -82,13 +88,21 @@ def main(configfile = None, skip_download = None):
     edit_donnees_dat(start_time_s, end_time_s, "sirane/INPUT/Donnees.dat", "sirane/new_donnees.dat")
     shutil.move("sirane/new_donnees.dat", "sirane/INPUT/Donnees.dat")
     
+    # Create EvolEmisLin file
+    evolemis_data = [start_time, "INPUT/EMISSIONS/EMIS_LIN/emis_lin.dat"]
+    evolemis_output = "sirane/evol_emis_lin_%s.dat" % timestamp
+    with open(, 'w') as f:
+        write_evolemislin(evolemis_data, f)
+
     # Copy data files
     print("Copying files")
     shutil.move(meteo_output, "sirane/INPUT/METEO/Meteo.dat")
     shutil.move(fond_output, "sirane/INPUT/FOND/Concentration_Fond.dat")
+    shutil.move(emis_output, "sirane/INPUT/EMISSIONS/EMIS_LIN/emis_lin.dat")
+    shutil.move(evolemis_output, "sirane/INPUT/EMISSIONS/Emissions_Lin_Surf.dat")
 
     # Launch model
-    print("Launch model")
+    print("Launching model")
     launch_model()
 
 
