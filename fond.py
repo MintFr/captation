@@ -97,7 +97,7 @@ def print_sirane_fond_input (data, file = sys.stdout):
     p = functools.partial(print, sep = "\t", file = file)
 
     # Print header
-    p('Date', 'NO2', 'O3', 'PM10', 'PM2.5')
+    p('Date', 'NO2', 'O3', 'PM10', 'PM25')
 
     for d in data:
         # Format to DD/MM/YYYY HH:MM
@@ -133,6 +133,8 @@ def main(outputfile = None, configfile = None, tohour = None, keepgrib = False, 
             jar = "fond_extract_data-all.jar"
 
     # === Download grib file and extract data ===
+
+    GRIB_RESOLUTION = 0.1
 
     # Upper left, Lower right
     area = [

@@ -54,22 +54,30 @@ def main(configfile = None, skip_download = None):
     
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H-%M-%SZ")
 
+    # Create an empty data files directory
+    dl_dir = "sirane/dl_data"
+    # shutil.rmtree(dl_dir, ignore_errors=True) # DEBUG uncomment
+    try:
+        os.mkdir(dl_dir)
+    except FileExistsError:
+        pass
+
     # TODO download more data
     if not skip_download:
         print("Fetching data…")
 
         # Create meteo file
-        meteo_output = "sirane/meteo_%s.dat" % timestamp
+        meteo_output = "%s/meteo_%s.dat" % (dl_dir, timestamp)
         print("Creating meteo file at %s" % meteo_output)
         meteo_start = meteo_main(outputfile = meteo_output, configfile = configfile)
 
         # Create fond file
-        fond_output = "sirane/fond_%s.dat" % timestamp
+        fond_output = "%s/fond_%s.dat" % (dl_dir, timestamp)
         print("Creating fond file at %s" % fond_output)
         fond_start = fond_main(outputfile = fond_output, configfile = configfile)
 
         # Create EmisLin file
-        emis_output = "sirane/emis_lin_%s.dat" % timestamp
+        emis_output = "%s/emis_lin_%s.dat" % (dl_dir, timestamp)
         print("Creating emission file at %s" % emis_output)
         traffic_time, datex_time = emission_main(outputfile = emis_output, configfile = configfile)
 
@@ -89,9 +97,9 @@ def main(configfile = None, skip_download = None):
     shutil.move("sirane/new_donnees.dat", "sirane/INPUT/Donnees.dat")
     
     # Create EvolEmisLin file
-    evolemis_data = [start_time, "INPUT/EMISSIONS/EMIS_LIN/emis_lin.dat"]
-    evolemis_output = "sirane/evol_emis_lin_%s.dat" % timestamp
-    with open(, 'w') as f:
+    evolemis_data = [(start_time, "INPUT/EMISSIONS/EMIS_LIN/emis_lin.dat", "INPUT/EMISSIONS/EMIS_SURF/Emis_surf.dat")]
+    evolemis_output = "%s/evol_emis_lin_%s.dat" % (dl_dir, timestamp)
+    with open(evolemis_output, 'w') as f:
         write_evolemislin(evolemis_data, f)
 
     # Copy data files

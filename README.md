@@ -31,6 +31,18 @@ digraph G {
 }
 ```
 
+## Configuration file
+
+`nm_segment_map` is the name of the csv file (with header) which maps a NM traffic id to ids in the network file (RESEAU).
+
+Here is a sample file. The 3rd column is superfluous
+```csv
+"ID_RESEAU,N,10,0","ID_Trafic,N,255,0","Distance,N,24,15"
+73,310,"35,2928380149"
+1028,7075,"27,232614794"
+1062,2075,"12,267833312"
+```
+
 ## Scripts
 
 ### meteo.py
@@ -162,6 +174,14 @@ It specifically fetches the latest traffic data (DataTR) for Nantes.
 ./datex2.py --file output.csv --config local/config.ini
 # *also* print DataTRT in csv format to output
 ./datex2.py --trt
+```
+
+Sample file:
+```csv
+measurementSiteReference,measurementTimeDefault,TrafficFlow,TrafficConcentration,TrafficSpeed,numberOfInputValuesUsed
+MWL44.S2,2021-03-02T15:11:00+01:00,0,0,0,0
+MWL44.S1,2021-03-02T15:11:00+01:00,33,6,88,33
+MWn44.G1,2021-03-02T15:11:00+01:00,41,7,67,41
 ```
 
 ### emission.py

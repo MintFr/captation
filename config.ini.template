@@ -13,3 +13,6 @@ fond_jar = ./path/to/fond_extract_data-all.jar
 [tipitrafic]
 username = TIPI_USERNAME
 password = TIPI_PASSWORD
+
+[emission]
+nm_segment_map = Id_trafic_reseau.csv
