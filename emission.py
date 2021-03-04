@@ -12,8 +12,25 @@ from datex2 import main as datex2_main
 
 
 """
-Types:
-- SiraneEmisLin is a dictionary of integer keys mapping to 3-tuple values of form (emis_no2, emis_pm10, emis_pm2.5) in g/s
+File formats:
+
+- A segment map file is a csv file where the first column is the traffic segment id,
+  and the second column is the corresponding network segment id.
+  The header line is ignored, as well as additional columns (for convenience).
+  cf. read_mapfile
+
+- A network lengths file is a csv file where the first column is the network segment id,
+  and the second column is the segment length in meters.
+  The header line is ignored, as well as additional columns (for convenience).
+  cf. read_network_lengths
+
+Python datatypes:
+
+- SiraneEmisLin is a dictionary of network ids mapping to 3-tuple values of form (emis_nox, emis_pm10, emis_pm2.5) in g/s
+  ie. `e_NOx, e_PM10, e_PM25 = sirane_emis_lin[network_id]`
+- SegmentMap is a dictionary of traffic segment ids mapping to lists of network segment ids.
+  ie. `for segment_id in segment_map[traffic_id]`
+- NetworkLengthMap is a dictionary of network segment ids mapping to the segment lengths in meters
 """
 
 
@@ -22,6 +39,7 @@ def compute_emission(speed, rate):
     Compute the emissions in g/s/km given a speed in km/h and a vehicule rate in 1/h.
     They should be multiplied by the network segment's length afterwards
     """
+    # TODO document data source
     V    = [       10,       30,       60,       90,       11,      130 ] # km/h
     NOx  = [     0.55,     0.38,     0.28,     0.30,     0.42,     0.58 ] # g/km
     PM10 = [ 0.005886, 0.004578, 0.001730, 0.004578, 0.006540, 0.007848 ] # g/km
@@ -61,10 +79,8 @@ class SkipEmissionComputation(Exception):
 
 def insert_emission(data, traffic_data, find_segments, extract_parameters):
     """
-    Updates $data in-place, based on $trafic_data using &find_segments and &extract_parameters
+    Updates the SiraneEmisLin data in-place, based on the list of traffic_data using &find_segments and &extract_parameters
 
-    $data is of type SiraneEmisLin
-    $traffic_data is an iterable of rows
     &find_segments(row) is a function that takes a row (from $traffic_data) and returns a list of tuples
                         of (segment_id, segment_length), with the length in meters
     &extract_parameters(row) is a function that takes a row (from $traffic_data) and
@@ -77,103 +93,153 @@ def insert_emission(data, traffic_data, find_segments, extract_parameters):
             speed, rate = extract_parameters(row)
         except SkipEmissionComputation:
             continue
-        distance_emissions = compute_emission(speed, rate)
+        emissions_per_km = compute_emission(speed, rate)
 
-        # Find network segments corresponding to the row data
+        # Update the network segments corresponding to the row data
         for segment_id, segment_length in find_segments(row):
+            entry = data.get(segment_id)
             # Convert segment_length to kilometers
-            emissions = [ x * segment_length / 1000 for x in distance_emissions ]
-            data[segment_id] = emissions
+            emissions = [ x * segment_length / 1000 for x in emissions_per_km ]
+
+            # Add emissions to existing ones if any
+            if entry is None:
+                data[segment_id] = emissions
+            else:
+                for i, v in enumerate(emissions):
+                    entry[i] += v
 
 
 def write_emislin(data, file = sys.stdout):
     """
-    $data is of type SiraneEmisLin
+    Write SiraneEmisLin data to file in SIRANE format.
+
     cf. <http://air.ec-lyon.fr/SIRANE/Article.php?&File=&Id=SIRANE_File_EmisLin&Lang=FR>
     """
     # Define our write function
     p = functools.partial(print, sep = "\t", file = file)
 
-    p("Id", "NO2", "PM10", "PM25")
+    p("Id", "NO", "NO2", "PM10", "PM25", "O3")
 
-    for k in sorted(data.keys()):
+    # v WIP
+    # Sort the ids numerically
+    ids = data.keys() # :[str]
+    ids = [ (int(x), x) for x in ids ] # :[(int, str)]
+    ids.sort(key = lambda x: x[0])
+
+    for _, k in ids:
         v = data[k]
-        p(k, *v)
+        p(k, 0, *v, 0) # NO and O3 emissions are set to 0
+    
+    # # v WIP
+    # for i in range(1, 342463 + 1): # TODO if this is correct, move the hardcoded number out of the script
+    #     p(i, 0, 0, 0, 0, 0)
 
 
 def write_evolemislin(data, file = sys.stdout):
     """
+    $data is a list of (datetime, emis_lin_filename, emis_surf_filename) tuples of type (datetime, str, str)
+
     NB the values are unmodulated by SIRANE, so the values are set to 1
     NB The file is also used for surface emissions, so we also need those headers
        Since we don't use surface emissions, the modulation factor is set to 0
 
     NB make sure that 'Nombre de modulations lineiques = 1' is in Donnees.dat
 
-    $data is a list of (datetime, filename) tuples of type (datetime, str)
+    cf. <http://air.ec-lyon.fr/SIRANE/Article.php?&File=&Id=SIRANE_File_EvolEmisLin&Lang=FR>
+        et <http://air.ec-lyon.fr/SIRANE/Article.php?&File=&Id=SIRANE_File_EvolEmisSurf&Lang=FR>
     """
     # Define our write function
     p = functools.partial(print, sep = "\t", file = file)
 
     our_species = "NO NO2 PM10 PM25 O3".split()
-    surf_headers = [ "Mod_Surf_%s" % x for x in our_species ]
+
     lin_headers = [ "Mod_Lin_0_%s" % x for x in our_species ]
+    surf_headers = [ "Mod_Surf_%s" % x for x in our_species ]
     p("Date", "Fich_Lin", *lin_headers, "Fich_Surf", *surf_headers)
+
     for row in data:
         dt, filename, surf_filename = row
         p(dt.strftime("%d/%m/%Y %H:%M"),
           filename,
-          *([1] * len(lin_headers)),
+          *([1] * len(lin_headers)), # Linear emissions are set to 1
           surf_filename,
-          *([0] * len(surf_headers)))
+          *([0] * len(surf_headers))) # Surface emissions are set to 0
 
 
-# Functions to handle data from trafic_nm.py
-
-I_NM_SPEED = 6
-I_NM_RATE = 4
-I_NM_ID = 0
-
-def create_find_nm_segments(map_filename):
+def read_network_lengths(segment_length_filename):
     """
-    Reads the contents of $map_filename and returns the a find_segments function
-    to use in insert_emission
-
-    map_filename is the filename as described by config.ini's nm_segment_map
+    Read the network lengths file and return a NetworkLengthMap
     """
-    nm_segment_map = {}
 
-    # Read map file, and fill in nm_segment_map
-    with open(map_filename) as f:
+    network_lengths = {}
+
+    with open(segment_length_filename) as f:
         reader = csv.reader(f)
         reader = iter(reader)
         _headers = next(reader) # Skip headers
 
         for row in reader:
             network_id = row[0]
+            segment_length = float(row[1])
+
+            network_lengths[network_id] = segment_length
+    
+    return network_lengths
+
+
+def read_mapfile(filename):
+    """
+    Reads the segment map file and returns a SegmentMap.
+    """
+    segment_map = {}
+
+    with open(filename) as f:
+        reader = csv.reader(f)
+        reader = iter(reader)
+        _headers = next(reader) # Skip headers
+
+        for row in reader:
+            # We don't use `network_id, traffic_id = row` to allow ignored extra columns
+            network_id = row[0]
             traffic_id = row[1]
 
-            entry = nm_segment_map.get(traffic_id)
+            # Update or create the entry
+            entry = segment_map.get(traffic_id)
             if entry is None:
-                # We don't have a reference to it, so insert it
-                nm_segment_map[traffic_id] = [network_id]
+                segment_map[traffic_id] = [network_id]
             else:
-                # Update the list
                 entry.append(network_id)
+    
+    return segment_map
 
-    # Now define the working function which has nm_segment_map in scope
-    def find_nm_segments(traffic_row):
-        """
-        $nm_segment_map is a map of NM traffic IDs to lists of network (RESEAU) ids
-        """
-        segments = nm_segment_map.get(traffic_row[I_NM_ID])
-        if segments is None:
-            segments = []
 
-        # TODO add segment length in segments [str] -> [(str, int)]
+def create_find_segments(segment_map, network_lengths, get_traffic_id):
+    """
+    Returns a find_segments function to use in insert_emission based on
+    a SegmentMap and a NetworkLengthMap and
+    a function that returns the traffic segment id given a traffic data row
+    """
 
+    # Now define the working function which has the segment_map in scope
+    def find_segments(traffic_row):
+        segments = []
+
+        traffic_id = get_traffic_id(traffic_row)
+        for segment_id in segment_map.get(traffic_id, []):
+            segment_length = network_lengths.get(segment_id)
+            if segment_length is not None:
+                segments.append( (segment_id, segment_length) )
+        
         return segments
     
-    return find_nm_segments
+    return find_segments
+
+
+# Functions to handle data from trafic_nm.py
+
+I_NM_ID = 0
+I_NM_SPEED = 6
+I_NM_RATE = 4
 
 def extract_nm_parameters(traffic_row):
     speed = int(traffic_row[I_NM_SPEED])
@@ -192,15 +258,9 @@ def extract_nm_parameters(traffic_row):
 
 # Functions to handle data from datex2.py
 
+I_D2_ID = 0
 I_D2_SPEED = 4
 I_D2_RATE = 2
-
-def find_d2_segments(traffic_row):
-    segments = []
-
-    # TODO find segments
-
-    return segments
 
 def extract_d2_parameters(traffic_row):
     # NB Missing values are empty strings
@@ -222,16 +282,28 @@ def main(configfile = None, outputfile = None):
     # Read configuration file
     config = configparser.ConfigParser()
     config.read(configfile)
-    nm_segment_map = config['emission']['nm_segment_map']
+    nm_segment_mapfile = config['emission']['nm_segment_map']
+    d2_segment_mapfile = config['emission']['d2_segment_map']
+    segment_length_file = config['emission']['network_segment_length']
     
     # Initialize data
     now_s = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     emis_data = {}
 
-    # Download and use NM traffic data
+    # Read network lengths, needed to compute the emissions
+    network_lengths = read_network_lengths(segment_length_file)
+
+    # === trafic_nm.py ===
+
+    # Download NM traffic data
     traffic_filename = "trafic_%s.csv" % now_s
     traffic_time = trafic_main(outputfile = traffic_filename)
-    find_nm_segments = create_find_nm_segments(nm_segment_map)
+
+    # Read mapfile
+    nm_segment_map = read_mapfile(nm_segment_mapfile)
+    find_nm_segments = create_find_segments(nm_segment_map, network_lengths, lambda row: row[I_NM_ID])
+
+    # Use downloaded data to update emis_data
     with open(traffic_filename) as f:
         reader = csv.reader(f, delimiter = ";")
         reader = iter(reader)
@@ -240,18 +312,26 @@ def main(configfile = None, outputfile = None):
         insert_emission(emis_data, reader, find_nm_segments, extract_nm_parameters)
     os.unlink(traffic_filename)
 
-    # Download and use PC Circulation traffic data
+    # === datex2.py ===
+
+    # Download PC Circulation data
     datex_filename = "datex2_%s.csv" % now_s
     datex_time = datex2_main(configfile = configfile, outputfile = datex_filename)
 
+    # Read datex2 mapfile
+    d2_segment_map = read_mapfile(d2_segment_mapfile)
+    find_d2_segments = create_find_segments(d2_segment_map, network_lengths, lambda row: row[I_D2_ID])
+
+    # Use downloaded data to update emis_data
     with open(datex_filename) as f:
         reader = csv.reader(f)
         reader = iter(reader)
         _headers = next(reader) # Skip headers
 
-        insert_emission(emis_data, reader, lambda row: [], extract_d2_parameters) # FIXME lambda row: []
+        insert_emission(emis_data, reader, find_d2_segments, extract_d2_parameters)
     os.unlink(datex_filename)
     
+    # Write data to output
     if outputfile is None:
         write_emislin(emis_data)
     else:

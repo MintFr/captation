@@ -16,3 +16,5 @@ password = TIPI_PASSWORD
 
 [emission]
 nm_segment_map = Id_trafic_reseau.csv
+d2_segment_map = Matrice_datex_id.csv
+network_segment_length = id_length.csv

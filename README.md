@@ -8,7 +8,7 @@ Scripts for the measurement team.
 * Install the dependencies as listed below
 * Run the script
 
-Call diagram:
+Call diagram written in graphviz dot:
 
 ```dot
 digraph G {
@@ -19,6 +19,7 @@ digraph G {
     emission [label = "emission.py"]
     trafic_nm [label = "trafic_nm.py"]
     datex2 [label = "datex2.py"]
+    fond_extract_data [label = "fond_extract_data.jar"]
     
     model_sh -> model
 
@@ -28,6 +29,8 @@ digraph G {
 
     emission -> trafic_nm
     emission -> datex2
+
+    fond -> fond_extract_data
 }
 ```
 
@@ -41,6 +44,17 @@ Here is a sample file. The 3rd column is superfluous
 73,310,"35,2928380149"
 1028,7075,"27,232614794"
 1062,2075,"12,267833312"
+```
+
+`network_segment_length` is the name of the csv file (with header) which maps a network (RESEAU) segment to it length in meters.
+
+Here's a sample file.
+```csv
+ID,length
+"1",1.700
+"2",4.588
+"3",4.305
+"4",4.101
 ```
 
 ## Scripts
@@ -200,6 +214,8 @@ Usage:
 Generates a stub SIRANE background concentration file with all concentrations set to 1. (may not work)
 
 ## Developer notes
+
+The fact that we're working with `NO2 O3 PM10 PM25` is generally hardcoded in the scripts
 
 ### TODO
 

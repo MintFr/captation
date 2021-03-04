@@ -97,7 +97,7 @@ def main(configfile = None, skip_download = None):
     shutil.move("sirane/new_donnees.dat", "sirane/INPUT/Donnees.dat")
     
     # Create EvolEmisLin file
-    evolemis_data = [(start_time, "INPUT/EMISSIONS/EMIS_LIN/emis_lin.dat", "INPUT/EMISSIONS/EMIS_SURF/Emis_surf.dat")]
+    evolemis_data = [(start_time, "EMISSIONS/EMIS_LIN/emis_lin.dat", "EMISSIONS/EMIS_SURF/Emis_surf.dat")]
     evolemis_output = "%s/evol_emis_lin_%s.dat" % (dl_dir, timestamp)
     with open(evolemis_output, 'w') as f:
         write_evolemislin(evolemis_data, f)
