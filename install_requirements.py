@@ -3,6 +3,10 @@
 from subprocess import run
 import sys
 
+"""
+This would've been a simple requirements.txt file, but we can't install cdsapi in one command
+"""
+
 cdsapi_chain = [
     ["six", "appdirs", "packaging", "wheel"],
     ["ordered_set"],
@@ -11,11 +15,10 @@ cdsapi_chain = [
 
 normal_deps = [
         "requests",
-        # "pygrib"
 ]
 
 def pip_install(pkgs):
-    cmd = ["pip", "install", "--disable-pip-version-check", *pkgs]
+    cmd = ["pip3", "install", "--disable-pip-version-check", *pkgs]
     print("$ " + " ".join(cmd))
     sys.stdout.flush()
     run(cmd)

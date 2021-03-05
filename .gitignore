@@ -17,5 +17,8 @@ sirane/sirane*
 sirane/*
 !sirane/.keep
 
+# Python
+__pycache__/
+
 # Others
 /tmp/

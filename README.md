@@ -2,36 +2,35 @@
 
 Scripts for the measurement team.
 
+`model/` contains scripts to run the model, `scripts/` contains helper scripts or unfinished scripts.
+
+## Installation
+
+%% TODO build tarball %%
+
+Set up the environment and install dependencies:
+
+```sh
+# Create a virtual environment in venv, and activate it
+python3 -m venv venv
+. venv/bin/activate
+
+# Install dependencies
+./install_requirements.py
+
+# Close the virtual environment
+deactivate
+```
+
+Create the configuration file `config.ini` using `config.ini.template` as a template.
+
 ## Usage
 
-* Copy the `config.ini.template` file to `config.ini` and fill in the required information.
-* Install the dependencies as listed below
-* Run the script
+Launch the model:
 
-Call diagram written in graphviz dot:
-
-```dot
-digraph G {
-    model_sh [label = "model.sh"]
-    model [ label = "model.py"]
-    fond [label = "fond.py"]
-    meteo [label = "meteo.py"]
-    emission [label = "emission.py"]
-    trafic_nm [label = "trafic_nm.py"]
-    datex2 [label = "datex2.py"]
-    fond_extract_data [label = "fond_extract_data.jar"]
-    
-    model_sh -> model
-
-    model -> fond
-    model -> meteo
-    model -> emission
-
-    emission -> trafic_nm
-    emission -> datex2
-
-    fond -> fond_extract_data
-}
+```sh
+# Activates the virtual env and launches the model
+./model.sh
 ```
 
 ## Configuration file
@@ -59,66 +58,9 @@ ID,length
 
 ## Scripts
 
-### meteo.py
-
-**WARN:** The date values are in UTC and not GMT+1.
-
-Generates a SIRANE weather input file from OpenWeatherMap data.
-
-**Requirements:** requests, and a valid API key from [OpenWeatherMap](https://openweathermap.org/)
-
-```sh
-# Print data to STDOUT
-./meteo.py
-# Write data to meteo.dat
-./meteo.py --file meteo.dat
-# Use custom config file
-./meto.py --config local/config.ini
-```
-
-### fond.py
-
-**WARN:** Times are in UTC and not GMT+1
-
-Generates a (24-hour long) SIRANE background concentration file from Copernicus data.
-
-**Requirements:** cdsapi, Java 11,  and a valid `atmosphere.cdsapi` from [Copernicus ADS](https://ads.atmosphere.copernicus.eu/)
-
-The `--java` and `--jar` arguments can be set in the `config.ini` file with keys `java11` and `fond_jar` under the `[fond]` section
-
-```sh
-# Download and print background pollution
-./fond.py
-# Custom java and jar paths if not specified in config.ini
-./fond.py --java /path/to/java11 --jar fond_extract_data/build/libs/fond_extract_data-all.jar
-# Download to fond.dat based on custom config file
-./fond.py […] --file fond.dat --config local/config.ini
-# Download forecasts up to 24:00 (instead of 06:00)
-./fond.py […] --tohour 24
-```
-
 #### fond_extract_grib
 
-A java app that extracts the data wanted by fond.py, from a netcdf file (and not a grib file).
 
-We don't handle GRIB files, because ucar's grib library, and by extension, geotool's don't handle the specific template 40 used in GRIB
-files downloaded from COPERNICUS. The eccodes library works, but you'd need to install it. So instead, we decided to use the netcdf format.
-
-```sh
-./gradlew run --args="-netcdf fond_2021-02-12.nc -lat 47.2172500 -lon -1.5533600"
-# or, using the shadowJar (after running `./gradlew shadowJar`)
-java -jar build/fond_extract_grib-all.jar -netcdf fond_2021-02-12.nc -lat 47.2172500 -lon -1.5533600
-```
-
-Sample output:
-```text
-FORECAST time from 20210212
-time: 0.0 1.0 2.0 3.0 4.0 5.0
-no2_conc: 5.5599656 4.723219 4.1629553 4.053813 4.524928 6.371196
-o3_conc: 69.35357 70.81811 71.61889 71.439384 70.99925 70.05165
-pm10_conc: 11.600811 11.010193 10.444889 10.026692 9.667715 9.815989
-pm2p5_conc: 11.315586 10.734458 10.171167 9.751464 9.406523 9.551438
-```
 
 ### meteo_archive.py
 
@@ -198,27 +140,18 @@ MWL44.S1,2021-03-02T15:11:00+01:00,33,6,88,33
 MWn44.G1,2021-03-02T15:11:00+01:00,41,7,67,41
 ```
 
-### emission.py
-
-Given the trafic data from `trafic_nm.py` and `datex2.py`, compute the vehicule emissions which will be used in SIRANE.
-
-Usage:
-```sh
-# Prints to EmisLin file to terminal
-./emission.py
-```
-
-
 ### fond_stub.py
 
 Generates a stub SIRANE background concentration file with all concentrations set to 1. (may not work)
 
 ## Developer notes
 
+pygrib was hard to install on the server, which is why we use java instead
+
 The fact that we're working with `NO2 O3 PM10 PM25` is generally hardcoded in the scripts
 
-### TODO
+The model doesn't want to run if there are no surface emission grids defined ??
 
-Use java's geotools instead of pygrib
+### TODO
 
 Handle timezones correctly: meteo.py and fond.py are in UTC, SIRANE expects GMT+1 (probably)

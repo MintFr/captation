@@ -8,4 +8,4 @@ echo "Loading Python virtualenv"
 . venv/bin/activate || exit 1
 
 echo "Launching model script"
-python3 ./model.py "$@"
+python3 ./model/model.py "$@"
