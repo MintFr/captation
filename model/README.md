@@ -114,7 +114,7 @@ Execution overview:
 Usage:
 
 ```sh
-# Prints to EmisLin file to terminal
+# Prints EmisLin file to terminal
 ./emission.py
 ```
 
@@ -141,15 +141,33 @@ Sample output files in `samples/emis_lin.dat` and `samples/emissions_lin_surf.da
 
 `trafic_nm.py` downloads a trafic data file from [Open Data Nantes Metropole](https://data.nantesmetropole.fr/explore/dataset/244400404_fluidite-axes-routiers-nantes-metropole/export/)
 
+Usage:
 
 ```sh
+# Write traffic csv data to trafic_file.csv
 ./trafic_nm.py --file trafic_file.csv
 ```
 
-Sample downloaded file:
-```csv
-Identifiant;Nom du tronçon;Longueur;Horodatage;Débit;Taux d'occupation;Vitesse;Temps de parcours;Code couleur;etat_trafic;Geométrie;geo_point_2d
-772;Vannes I9;410;2021-03-01T10:44:00+01:00;360;8.3;16;93;3;Fluide;"{""type"": ""LineString"", ""coordinates"": [[-1.582270101540026, 47.2352686493068], [-1.577780721076294, 47.23319125926304]]}";47.2342299543,-1.58002541131
-9;Schuman I5;309;2021-03-01T10:44:00+01:00;480;5.8;21;54;3;Fluide;"[OMITTED]";47.2345655211,-1.56626783147
-5043;Anglais I5;207;2021-03-01T10:44:00+01:00;480;6.6;18;42;3;Fluide;"[OMITTED]";47.2286549348,-1.57591504116
+Sample downloaded file in `samples/trafic_nm.csv`.
+
+## datex2.py
+
+`datex2.py` downloads data from from [Info-Routière](http://diffusion-numerique.info-routiere.gouv.fr/toutes-les-dir-a10.html) and convert it to a CSV file.
+
+It specifically fetches the latest traffic data (DataTR) for Nantes.
+
+When called as a script, it writes prints the dat to the terminal.
+
+```sh
+# Prints data to terminal
+./datex2.py
+# Write data to traffic.csv
+./datex2.py --file traffic.csv
+
+# Use a custom configuration file
+./datex2.py […] --config local/config.ini
+# Additionally print DataTRT in csv format to the terminal
+./datex2.py […] --trt
 ```
+
+Sample downloaded file in `samples/datex2.csv`.

@@ -100,46 +100,6 @@ perl -nle 'if ($. == 2) { print && exit }' 210120_atmotrack_data.csv > Atmo3_atm
 tail -qn +3 2101*.csv >> Atmo3_atmotrack_data.csv # Beware of infinite loops
 ```
 
-### trafic_nm.py
-
-Depends on requests.
-
-Download a trafic data file from [Opendata Nantes Metropole](https://data.nantesmetropole.fr/explore/dataset/244400404_fluidite-axes-routiers-nantes-metropole/export/)
-```sh
-./trafic_nm.py --file trafic_file.csv
-```
-
-Sample downloaded file:
-```csv
-Identifiant;Nom du tronçon;Longueur;Horodatage;Débit;Taux d'occupation;Vitesse;Temps de parcours;Code couleur;etat_trafic;Geométrie;geo_point_2d
-772;Vannes I9;410;2021-03-01T10:44:00+01:00;360;8.3;16;93;3;Fluide;"{""type"": ""LineString"", ""coordinates"": [[-1.582270101540026, 47.2352686493068], [-1.577780721076294, 47.23319125926304]]}";47.2342299543,-1.58002541131
-9;Schuman I5;309;2021-03-01T10:44:00+01:00;480;5.8;21;54;3;Fluide;"[OMITTED]";47.2345655211,-1.56626783147
-5043;Anglais I5;207;2021-03-01T10:44:00+01:00;480;6.6;18;42;3;Fluide;"[OMITTED]";47.2286549348,-1.57591504116
-```
-
-### datex2.py
-
-Depends on requests.
-
-Get data from [Info-Routière](http://diffusion-numerique.info-routiere.gouv.fr/toutes-les-dir-a10.html) and convert it to a CSV file.
-It specifically fetches the latest traffic data (DataTR) for Nantes.
-
-```sh
-./datex2.py
-# Write to output.csv with a custom config
-./datex2.py --file output.csv --config local/config.ini
-# *also* print DataTRT in csv format to output
-./datex2.py --trt
-```
-
-Sample file:
-```csv
-measurementSiteReference,measurementTimeDefault,TrafficFlow,TrafficConcentration,TrafficSpeed,numberOfInputValuesUsed
-MWL44.S2,2021-03-02T15:11:00+01:00,0,0,0,0
-MWL44.S1,2021-03-02T15:11:00+01:00,33,6,88,33
-MWn44.G1,2021-03-02T15:11:00+01:00,41,7,67,41
-```
-
 ### fond_stub.py
 
 Generates a stub SIRANE background concentration file with all concentrations set to 1. (may not work)
