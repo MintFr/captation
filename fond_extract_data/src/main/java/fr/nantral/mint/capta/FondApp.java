@@ -22,6 +22,7 @@ public class FondApp {
         }
     }
 
+
     // I wanted to log to STDERR, but couldn't figure out how to configure logback with logback.xml.
     // So instead, I just suppress log messages
     public static void setupLogger() {
@@ -29,6 +30,8 @@ public class FondApp {
         rootLogger.setLevel(Level.ERROR);
     }
 
+
+    /** A main function in which we can throw exceptions */
     public static void realMain(String[] args) throws Exception {
         // === Handle command line arguments ===
         var options = new Options();
@@ -51,9 +54,6 @@ public class FondApp {
         var lon_s = cmd.getOptionValue("lon");
         if (lon_s == null) throw new Exception("Missing longitude");
         var lon = Float.parseFloat(lon_s);
-
-        System.err.println("filename = " + filename);
-        System.err.println("lat, lon = " + lat + ", " + lon);
 
 
         // === Do it ===
@@ -100,7 +100,7 @@ public class FondApp {
                 }
             }
 
-            System.err.println("i, j = " + min_lat_i + ", " + min_lon_i);
+            System.err.println("Relevant data index: " + min_lat_i + ", " + min_lon_i);
 
             // === Grab data for each variable we're interested in ===
 

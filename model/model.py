@@ -10,8 +10,6 @@ from meteo import main as meteo_main
 from fond import main as fond_main
 from emission import main as emission_main, write_evolemislin
 
-def this_is_in_model_slash_model_py():
-    pass
 
 # WARN SIRANE's directory is hardcoded as being "sirane"
 
@@ -50,10 +48,11 @@ def launch_model():
     subprocess.run(cmd, cwd = "sirane")
 
 
-def main(configfile = None, skip_download = None):
+def main(configfile = None, skip_download = None, skip_emission = False):
     if configfile is None:
         configfile = "config.ini"
     skip_download = bool(skip_download)
+    skip_emission = bool(skip_emission)
     
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H-%M-%SZ")
 
@@ -79,10 +78,11 @@ def main(configfile = None, skip_download = None):
         print("Creating fond file at %s" % fond_output)
         fond_start = fond_main(outputfile = fond_output, configfile = configfile)
 
-        # Create EmisLin file
-        emis_output = "%s/emis_lin_%s.dat" % (dl_dir, timestamp)
-        print("Creating emission file at %s" % emis_output)
-        traffic_time, datex_time = emission_main(outputfile = emis_output, configfile = configfile)
+        if not skip_emission:
+            # Create EmisLin file
+            emis_output = "%s/emis_lin_%s.dat" % (dl_dir, timestamp)
+            print("Creating emission file at %s" % emis_output)
+            traffic_time, datex_time = emission_main(outputfile = emis_output, configfile = configfile)
 
     else:
         print("Skipped fetching data from network sources")
@@ -109,7 +109,8 @@ def main(configfile = None, skip_download = None):
     print("Copying files")
     shutil.move(meteo_output, "sirane/INPUT/METEO/Meteo.dat")
     shutil.move(fond_output, "sirane/INPUT/FOND/Concentration_Fond.dat")
-    shutil.move(emis_output, "sirane/INPUT/EMISSIONS/EMIS_LIN/emis_lin.dat")
+    if not skip_emission:
+        shutil.move(emis_output, "sirane/INPUT/EMISSIONS/EMIS_LIN/emis_lin.dat")
     shutil.move(evolemis_output, "sirane/INPUT/EMISSIONS/Emissions_Lin_Surf.dat")
 
     # Launch model
@@ -121,6 +122,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--config")
     parser.add_argument("--skip-download", action = "store_true")
+    parser.add_argument("--skip-emission", action = "store_true")
     args = parser.parse_args()
 
-    main(configfile = args.config, skip_download = args.skip_download)
+    main(configfile = args.config, skip_download = args.skip_download, skip_emission = args.skip_emission)

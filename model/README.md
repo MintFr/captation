@@ -41,6 +41,19 @@ Execution overview:
 - Move those files into the configuration directory `./sirane/INPUT/` and edit `./sirane/INPUT/Donnees.dat`
 - Change working directory to `./sirane/` and launch the model `./sirane-rev128-etudiants-Linux64`
 
+Usage:
+```sh
+# Launch normally
+./model.py
+# Use custom config file location
+./model.py --config local/config.ini
+
+# Skip downloading files
+./model.py --skip-download
+# Skip writing the emis_lin.dat file
+./model.py --skip-emission
+```
+
 
 ## meteo.py
 

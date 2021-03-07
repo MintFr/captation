@@ -6,24 +6,26 @@ from datetime import datetime, timedelta, timezone
 
 import requests
 
-# TODO Choisir le format le plus approprié ici: <https://data.nantesmetropole.fr/explore/dataset/244400404_fluidite-axes-routiers-nantes-metropole/export/>
-#      Formats disponibles: CSV, JSON, Excel, GeoJSON, Shapefile, KML
-
 
 def main(outputfile = None):
     """
+    Download Nantes Metropole traffic data as a csv to outputfile.
+
     Returns the data's creation time
     """
-    # On télécharge pour l'instant les données au format CSV
-    fileformat = "csv"
-    api_url = "https://data.nantesmetropole.fr/explore/dataset/244400404_fluidite-axes-routiers-nantes-metropole/download/?format=%s&timezone=Europe/Berlin&lang=fr&use_labels_for_header=true&csv_separator=%%3B" % fileformat
 
     if outputfile is None:
         outputfile = "trafic.%s" % fileformat
+
+    # Create file URL
+    fileformat = "csv"
+    api_url = "https://data.nantesmetropole.fr/explore/dataset/244400404_fluidite-axes-routiers-nantes-metropole/download/?format=%s&timezone=Europe/Berlin&lang=fr&use_labels_for_header=true&csv_separator=%%3B" % fileformat
     
+    # Download it
     r = requests.get(api_url)
     r.raise_for_status()
 
+    # Write it to the file
     with open(outputfile, 'wb') as f:
         f.write(r.content)
 
@@ -34,7 +36,7 @@ def main(outputfile = None):
         next(lines) # skip first line (headers)
         row = next(lines)
 
-    # manually split the timezone offset because I'm not sure it's handled properly
+    # Manually split the timezone offset because I'm not sure it's handled properly
     dt, offset = row[3].split("+")
 
     tz_val = datetime.strptime(offset, "%H:%M")

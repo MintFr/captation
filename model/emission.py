@@ -123,7 +123,7 @@ def write_emislin(data, file = sys.stdout):
     p("Id", "NO", "NO2", "PM10", "PM25", "O3")
     
     # SIRANE wants the segment ids to be 0-based and to all be present in the emission file
-    SEGMENT_COUNT = 342463 # TODO move out hardcoded value ?
+    SEGMENT_COUNT = 63235 # TODO move out hardcoded value ?
     for i in range(SEGMENT_COUNT):
         k = str(i) # data keys are strings
         v = data.get(k, [0, 0, 0])
