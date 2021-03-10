@@ -48,11 +48,12 @@ def launch_model():
     subprocess.run(cmd, cwd = "sirane")
 
 
-def main(configfile = None, skip_download = None, skip_emission = False):
+def main(configfile = None, skip_download = None, skip_emission = False, keep_traffic = None):
     if configfile is None:
         configfile = "config.ini"
     skip_download = bool(skip_download)
     skip_emission = bool(skip_emission)
+    keep_traffic = bool(keep_traffic)
     
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H-%M-%SZ")
 
@@ -82,7 +83,7 @@ def main(configfile = None, skip_download = None, skip_emission = False):
             # Create EmisLin file
             emis_output = "%s/emis_lin_%s.dat" % (dl_dir, timestamp)
             print("Creating emission file at %s" % emis_output)
-            traffic_time, datex_time = emission_main(outputfile = emis_output, configfile = configfile)
+            traffic_time, datex_time = emission_main(outputfile = emis_output, configfile = configfile, keep_traffic_data = keep_traffic)
 
     else:
         print("Skipped fetching data from network sources")
@@ -123,6 +124,10 @@ if __name__ == "__main__":
     parser.add_argument("--config")
     parser.add_argument("--skip-download", action = "store_true")
     parser.add_argument("--skip-emission", action = "store_true")
+    parser.add_argument("--keep-traffic", action = "store_true")
     args = parser.parse_args()
 
-    main(configfile = args.config, skip_download = args.skip_download, skip_emission = args.skip_emission)
+    main(configfile = args.config,
+         skip_download = args.skip_download,
+         skip_emission = args.skip_emission,
+         keep_traffic = args.keep_traffic)

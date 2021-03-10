@@ -98,10 +98,10 @@ def insert_emission(data, traffic_data, find_segments, extract_parameters):
 
         # Update the network segments corresponding to the row data
         for segment_id, segment_length in find_segments(row):
-            entry = data.get(segment_id)
             # Convert segment_length to kilometers
             emissions = [ x * segment_length / 1000 for x in emissions_per_km ]
 
+            entry = data.get(segment_id)
             # Add emissions to existing ones if any
             if entry is None:
                 data[segment_id] = emissions
@@ -110,9 +110,10 @@ def insert_emission(data, traffic_data, find_segments, extract_parameters):
                     entry[i] += v
 
 
-def write_emislin(data, file = sys.stdout):
+def write_emislin(data, segment_count, file = sys.stdout):
     """
     Write SiraneEmisLin data to file in SIRANE format.
+    It also takes the number of segments in the network file, to be able to fill in the missing values.
 
     cf. <http://air.ec-lyon.fr/SIRANE/Article.php?&File=&Id=SIRANE_File_EmisLin&Lang=FR>
     """
@@ -123,8 +124,7 @@ def write_emislin(data, file = sys.stdout):
     p("Id", "NO", "NO2", "PM10", "PM25", "O3")
     
     # SIRANE wants the segment ids to be 0-based and to all be present in the emission file
-    SEGMENT_COUNT = 23457 # TODO move out hardcoded value ?
-    for i in range(SEGMENT_COUNT):
+    for i in range(segment_count):
         k = str(i) # data keys are strings
         v = data.get(k, [0, 0, 0])
         p(i, 0, *v, 0) # NO and O3 emissions are set to 0
@@ -270,9 +270,10 @@ def extract_d2_parameters(traffic_row):
     return speed, rate
 
 
-def main(configfile = None, outputfile = None):
+def main(configfile = None, outputfile = None, keep_traffic_data = None):
     if configfile is None:
         configfile = "config.ini"
+    keep_traffic_data = bool(keep_traffic_data)
 
     # Read configuration file
     config = configparser.ConfigParser()
@@ -280,6 +281,11 @@ def main(configfile = None, outputfile = None):
     nm_segment_mapfile = config['emission']['nm_segment_map']
     d2_segment_mapfile = config['emission']['d2_segment_map']
     segment_length_file = config['emission']['network_segment_length']
+    segment_count = None
+    try:
+        segment_count = int(config['emission']['segment_count'])
+    except:
+        pass
     
     # Initialize data
     now_s = datetime.now(timezone.utc).strftime("%Y-%m-%d_%H-%M-%S")
@@ -287,6 +293,10 @@ def main(configfile = None, outputfile = None):
 
     # Read network lengths, needed to compute the emissions
     network_lengths = read_network_lengths(segment_length_file)
+    if segment_count is None:
+        segment_count = len(network_lengths)
+    
+    print("DEBUG segment count = %d" % segment_count)
 
     # === trafic_nm.py ===
 
@@ -305,7 +315,8 @@ def main(configfile = None, outputfile = None):
         _headers = next(reader) # Skip headers
 
         insert_emission(emis_data, reader, find_nm_segments, extract_nm_parameters)
-    os.unlink(traffic_filename)
+    if not keep_traffic_data:
+        os.unlink(traffic_filename)
 
     # === datex2.py ===
 
@@ -324,14 +335,22 @@ def main(configfile = None, outputfile = None):
         _headers = next(reader) # Skip headers
 
         insert_emission(emis_data, reader, find_d2_segments, extract_d2_parameters)
-    os.unlink(datex_filename)
+    if not keep_traffic_data:
+        os.unlink(datex_filename)
     
     # Write data to output
     if outputfile is None:
-        write_emislin(emis_data)
+        write_emislin(emis_data, segment_count)
     else:
         with open(outputfile, 'w') as f:
-            write_emislin(emis_data, f)
+            write_emislin(emis_data, segment_count, f)
+    
+    # Move the traffic data files if we're keeping them
+    if keep_traffic_data:
+        os.makedirs('sirane/traffic_data', exist_ok = True)
+        os.rename(traffic_filename, 'sirane/traffic_data/%s' % traffic_filename)
+        os.rename(datex_filename, 'sirane/traffic_data/%s' % datex_filename)
+
     
     return traffic_time, datex_time
 

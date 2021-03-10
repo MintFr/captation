@@ -65,8 +65,13 @@ The model doesn't _seem to_ to run properly if there are no surface emission gri
 
 ### TODO
 
-- Make SIRANE output in ASCII format, which we will then parse and convert to a Arc/Info ASCII Grid, so that the server's version of raster2pgsql can import them into PostGIS. Currently, the server can't import netcdf files. (NB: AAIGrid is an arbitrary format choice that happens to be simple to write, and does work properly with the server's raster2pgsql)
-- Write a script that cleans up the output directory as well as the temporary download directory. This is especially important since MintServ (the database importer) will import the first file present in the output directory. (Also add an option to not delete them but only rename them to something else)
+- For some reason SIRANE outputs a netcdf file that is not recognized as a raster by QGIS (it uses `x, y` instead of `lat, lon`). It works properly with `raster2pgsql` though.
+
+- `raster2pgsql` and PostGIS's `ST_Translate` (see MintServ) seem to not work on the server (Debian Stretch), something about the gdal library. If it's only `raster2pgsql` which doesn't work, a solution would be to make SIRANE output in ASCII format, which we will then parse and convert to a format which works with the server's `raster2pgsql`. Maybe using the format Arc/Info ASCII Grid which is easy to write, although it requires square cells.
+
+  A manual one-off workaround is to convert the netcdf to the osm projection with QGIS, and then import that using raster2pgsql on your machine. This skips using `ST_Translate`
+
+- Write a script that cleans up the output directory as well as the temporary download directory. This is especially important since MintServ (the database importer) will import the first file present in the output directory. (Also add an option to not delete them but to rename them to something else)
 
 ### Documentation status
 

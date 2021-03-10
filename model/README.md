@@ -52,6 +52,8 @@ Usage:
 ./model.py --skip-download
 # Skip writing the emis_lin.dat file
 ./model.py --skip-emission
+# Keep the downloaded traffic files in sirane/traffic_data
+./model.py --keep-traffic
 ```
 
 
