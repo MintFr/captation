@@ -6,6 +6,8 @@ Call diagram written in graphviz dot:
 
 ```dot
 digraph G {
+    MintServ [label = "MintServ.jar"]
+    compute_pollution [label = "compute_pollution.sql"]
     model_sh [label = "model.sh"]
     model [label = "model.py"]
     fond [label = "fond.py"]
@@ -14,6 +16,10 @@ digraph G {
     trafic_nm [label = "trafic_nm.py"]
     datex2 [label = "datex2.py"]
     fond_extract_data [label = "fond_extract_data.jar"]
+    
+    MintServ -> model_sh
+    MintServ -> raster2pgsql
+    MintServ -> compute_pollution
     
     model_sh -> model
 
