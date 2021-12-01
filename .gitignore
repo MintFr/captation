@@ -1,6 +1,7 @@
 # Python
 /venv/
 /__pycache__/
+dataCapteurs/.ipynb_checkpoints
 
 # Local configuration
 /config.ini
