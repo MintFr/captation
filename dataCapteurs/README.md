@@ -32,3 +32,7 @@ python dataChange.py analyse4-ECN0811.txt Potenvol_sable_50.pot test
 
 
 **In order to work, the data needs to be exactly as the same format every time !!**
+
+# How to use gpx_to_csv.py
+
+1) 

@@ -1,5 +1,6 @@
 # Python
 /venv/
+envCapta/
 /__pycache__/
 dataCapteurs/.ipynb_checkpoints
 
