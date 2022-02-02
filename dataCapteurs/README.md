@@ -35,4 +35,4 @@ python dataChange.py analyse4-ECN0811.txt Potenvol_sable_50.pot test
 
 # How to use gpx_to_csv.py
 
-1) 
+1) See FusionDonneesType notebook.
